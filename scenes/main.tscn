@@ -1,27 +1,21 @@
 [gd_scene format=3 uid="uid://bwj3uukcg12p1"]
 
 [ext_resource type="Script" uid="uid://duewdbbsl6u0s" path="res://addons/scenic/nodes/scene_manager.gd" id="1_o5qli"]
-[ext_resource type="Script" uid="uid://y1x7ms1bt3xb" path="res://addons/scenic/resources/scene_info.gd" id="2_sugp2"]
+[ext_resource type="Script" uid="uid://358o0h0csjho" path="res://addons/scenic/resources/scene_info.gd" id="2_sugp2"]
 [ext_resource type="Script" uid="uid://4u0ap31txany" path="res://addons/scenic/nodes/transitions/fade_transition.gd" id="3_sugp2"]
 
 [sub_resource type="Resource" id="Resource_sugp2"]
 script = ExtResource("2_sugp2")
-name = &"Test 1"
 uid = 4107548308068872633
 initial = true
-_path = "res://scenes/test_1.tscn"
 
 [sub_resource type="Resource" id="Resource_jyhfs"]
 script = ExtResource("2_sugp2")
-name = &"Test 2"
 uid = 216315507167921973
-_path = "res://scenes/test_2.tscn"
 
 [sub_resource type="Resource" id="Resource_tbgi4"]
 script = ExtResource("2_sugp2")
-name = &"Test 3"
 uid = 2221527222819472640
-_path = "res://scenes/test_3.tscn"
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0wfyh"]
 bg_color = Color(1, 1, 1, 1)

@@ -17,6 +17,7 @@ config/features=PackedStringArray("4.7", "Forward Plus")
 [autoload]
 
 GlobalSceneManager="*uid://dwycp85sl04s"
+SceneLoader="*uid://edkfplkj2dgu"
 
 [display]
 
