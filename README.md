@@ -240,7 +240,7 @@ Global scenes are one application of force loading. Making a scene global will m
 
 To make a scene global simply click the globe icon beside the scene in the Scene Manager.
 
-{IMAGE HERE}
+![Global Scene](https://github.com/super-miner/Scenic/blob/main/global_scene.png)
 
 ### Manual Force Loading
 You can also implement your own loading logic by calling the `SceneManager`'s `force_load(...)` and `force_unload(...)` functions. They work exactly how you would expect, with scenes passed into `force_load(...)` being loaded until `force_unload(...)` is called.
