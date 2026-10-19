@@ -116,7 +116,7 @@ queue.transition()
 
 > [!NOTE]
 >
-> `switch()` (and all other queuing functions) will implicitly create a queue when called on a Scene Manager, but we can also create one explicitly by calling `queue()`
+> `switch()` (and all other queuing functions) will implicitly create a queue when called on a Scene Manager, but you can also create one explicitly by calling `queue()`
 >
 > ```gdscript
 > # Does the same thing as above
@@ -163,12 +163,23 @@ Looking at the `FadeTransition` in the inspector we can see that it takes in a c
 
 ![Transition Setup](https://github.com/super-miner/Scenic/blob/main/scene_manager_setup.png)
 
-To use the fade transition, replace your call to `apply()` with a call to `with_transition()` like this.
+To use the fade transition, reference it in your call to `transition()`.
 
 ```gdscript
-GlobalSceneManager.queue_set_scene(&"Scene 2")
-GlobalSceneManager.with_transition(&"Fade") # The name used to reference the transition here is the name of the SceneTransition node.
+GlobalSceneManager.switch(&"Scene 2").transition(&"Fade") # The name used to reference the transition here is the name of the SceneTransition node.
 ```
+
+> [!TIP]
+>
+> You can also pre-specify a transition for a queue by using `with_transition()`.
+>
+> ```gdscript
+> var queue = GlobalSceneManager.switch(&"Scene 2").with_transition(&"Fade")
+>
+> # ... do some stuff
+>
+> queue.transition() # Will use the transition set above
+> ```
 
 ### Custom Transitions
 You can also create your own custom transitions. In Scenic transitions are just a type of node so you can create your own by creating a class that extends `SceneTransition`.
@@ -205,9 +216,10 @@ var important_data_2 = {
 	"health": 100.0
 }
 
-GlobalSceneManager.queue_set_scene(&"Scene 2", important_data_1)
-GlobalSceneManager.queue_add_scene(&"Scene 3", important_data_2)
-GlobalSceneManager.apply()
+GlobalSceneManager \
+	.switch(&"Scene 2", important_data_1) \
+	.add(&"Scene 3", important_data_2) \
+	.transition()
 ```
 
 This data can then be received by the scene by having it implement the `_start` method.
