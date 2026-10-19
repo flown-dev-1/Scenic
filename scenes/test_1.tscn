@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://b331n753cv2bb" path="res://scripts/test_1.gd" id="1_p1gcm"]
 
-[node name="Test1" type="Node" unique_id=133889666]
+[node name="Test1" type="Node" unique_id=1736839426]
 script = ExtResource("1_p1gcm")
 metadata/_custom_type_script = "uid://dpxn232fvunp8"
 

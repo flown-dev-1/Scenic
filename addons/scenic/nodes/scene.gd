@@ -2,11 +2,11 @@
 class_name Scene extends Node
 
 #region exports
-# Used to set tags in the inspector, not to be used at runtime
+# Used to set tags in the inspector, _internal_tags should be used at runtime
 @export var _tags: Array[StringName] = []
 
 #region identity
-var _internal_tags: Dictionary = {}
+var _internal_tags: Dictionary = {} #{<tag>: null}
 
 #region references
 var scene_manager: SceneManager = null
