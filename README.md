@@ -102,9 +102,49 @@ func _on_level_1_finished() -> void:
 > ```
 
 ### Queuing
-As I'm sure you have noticed, Scenic doesn't allow you to directly perform scene operations like `set_scene`, `add_scene`, etc. instead requiring you to queue them up and then apply them with `apply()`. This is because Scenic handles asynchronous scene loading automatically and queuing allows it to start loading the scenes *before* they need to be instantiated.
+Now that you are familiar with the basic structure of Scenic it is time to talk about queuing which will help explain why it is structured this way.
 
-This will be especially useful when we start talking about scene transitions because the scenes can start loading at the beginning of the transition animation.
+All scene transitions in Scenic are done in two steps: Queuing up the scene changes and actually applying them. In our previous examples we have done this all on one line but it can be split up.
+
+```gdscript
+# Create the queue
+var queue: SceneQueue = GlobalSceneManager.switch(&"Scene 2")
+
+# Apply the transition
+queue.transition()
+```
+
+> [!NOTE]
+>
+> `switch()` (and all other queuing functions) will implicitly create a queue when called on a Scene Manager, but we can also create one explicitly by calling `queue()`
+>
+> ```gdscript
+> # Does the same thing as above
+> var queue: SceneQueue = GlobalSceneManager.queue().switch(&"Scene 2")
+> ```
+
+There are good reasons for splitting up the queuing and applying of scene transitions. For example, Scenic will start loading scenes asynchronously as soon as they are queued up, so we can do something like this to ensure that they are loaded before we need to transition.
+
+```gdscript
+var main_menu_queue: SceneQueue
+var death_overlay_queue: SceneQueue
+var next_level_queue: SceneQueue
+
+func _ready() -> void:
+	# These will all start preloading the required scenes right away
+	main_menu_queue = GlobalSceneManager.switch(&"Main Menu")
+	death_overlay_queue = GlobalSceneManager.add(&"Death Overlay")
+	next_level_queue = GlobalSceneManager.switch(&"Level 2", null, [&"UI"])
+
+func main_menu_pressed() -> void:
+	main_menu_queue.transition()
+
+func die() -> void:
+	death_overlay_queue.transition()
+
+func next_level() -> void:
+	next_level_queue.transition()
+```
 
 ## Transitions
 One important feature of Scenic is that it can handle scene transitions for you. To set up a scene transition all you need to do is add it as a child of the scene manager.
