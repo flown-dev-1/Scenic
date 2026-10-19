@@ -164,7 +164,7 @@ func _update_list() -> void:
 		item.set_icon(1, _editor_theme.get_icon("PackedScene", "EditorIcons"))
 		item.add_button(1, _editor_theme.get_icon("AutoPlay", "EditorIcons"), 0, false, "Initial")
 		item.set_button_color(1, 0, Color(1.0, 1.0, 1.0, 1.0 if scene_info.initial else 0.5))
-		item.add_button(1, _editor_theme.get_icon("Environment", "EditorIcons"), 1, false, "Load on Start")
+		item.add_button(1, _editor_theme.get_icon("Environment", "EditorIcons"), 1, false, "Global")
 		item.set_button_color(1, 1, Color(1.0, 1.0, 1.0, 1.0 if scene_info.global else 0.5))
 		item.add_button(1, _editor_theme.get_icon("Remove", "EditorIcons"), 2, false, "Remove")
 		
