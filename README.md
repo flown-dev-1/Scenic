@@ -59,8 +59,7 @@ Scenic is designed to be as flexible as possible while keeping the core API simp
 This is how you do the very basic scene change that you would expect from any scene manager addon. It will free the previously loaded scene(s) and instantiate the new one.
 
 ```gdscript
-GlobalSceneManager.queue_set_scene(&"Scene 2")
-GlobalSceneManager.apply()
+GlobalSceneManager.switch(&"Scene 2").transition()
 ```
 
 > [!TIP]
@@ -71,37 +70,35 @@ Technically you could stop here and you would be able to manage your scenes, but
 Before we go any further it is important to explain a few points about how the scene manager handles scenes.
 
 ### Multiple Scenes
-Scene managers in Scenic can have multiple scenes loaded at once. Because of this Scenic offers more control than just `queue_set_scene()` in the form of.
+Scene managers in Scenic can have multiple scenes loaded at once. Because of this Scenic offers more control than just `switch()` in the form of.
 
-* `queue_add_scene()` and `queue_add_scenes()`
-* `queue_reload_scene()` and `queue_reload_scenes()`
-* `queue_remove_scene()` and `queue_remove_scenes()`
+| **Function** | **Single Scene** | **Multiple Scenes** |
+| --- | --- | --- |
+| Switch scenes | `switch(...)` | `switches(...)` |
+| Add scenes | `add(...)` | `adds(...)` |
+| Reload scenes | `reload(...)` | `reloads(...)` |
+| Remove scenes | `remove(...)` | `remove(...)` |
+| Remove all scenes | N/A | `remove_all(...)` |
 
 This allows you to do things like swap out the current level without swapping out the HUD or the pause menu.
 
 ```gdscript
 func _ready() -> void:
-	GlobalSceneManager.queue_remove_scenes()
-	GlobalSceneManager.queue_add_scenes([&"Level 1", &"HUD", &"Pause Menu"])
-	GlobalSceneManager.apply()
+	GlobalSceneManager.remove_all().adds([&"Level 1", &"HUD", &"Pause Menu"]).transition()
 
 func _on_level_1_finished() -> void:
-	GlobalSceneManager.queue_remove_scene(&"Level 1")
-	GlobalSceneManager.queue_add_scene(&"Level 2")
-	GlobalSceneManager.apply()
+	GlobalSceneManager.remove(&"Level 1").add(&"Level 2").transition()
 
-	# Alternative code using queue_set_scene's exclude functionality.
+	# Alternative code using switch's exclude functionality.
 	# This code assumes that all scenes we want to keep have the "UI" tag applied in the inspector.
-	GlobalSceneManager.queue_set_scene(&"Level 2", null, [&"UI"])
-	GlobalSceneManager.apply()
+	GlobalSceneManager.switch(&"Level 2", null, [&"UI"]).transition()
 ```
 
 > [!NOTE]
-> If you don't care about having multiple scenes then you can just use `queue_set_scene` and it will behave as you would expect.
+> If you don't care about having multiple scenes then you can just use `switch` and it will behave as you would expect.
 >
 > ```gdscript
-> GlobalSceneManager.queue_set_scene(&"Scene 2")
-> GlobalSceneManager.apply()
+> GlobalSceneManager.switch(&"Scene 2").transition()
 > ```
 
 ### Queuing
