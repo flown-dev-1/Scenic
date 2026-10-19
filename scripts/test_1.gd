@@ -12,8 +12,10 @@ func test_1() -> void:
 	GlobalSceneManager.reload("Test 1", %HSlider.value).transition()
 
 func test_2() -> void:
-	GlobalSceneManager.switch("Test 2", %HSlider.value, [&"Overlay"]).transition_callback(func ():
-		print("Transition callback")
+	GlobalSceneManager \
+		.switch("Test 2", %HSlider.value, [&"Overlay"]) \
+		.transition_callback(func ():
+			print("Transition callback")
 	, &"Fade")
 
 func test_3() -> void:
