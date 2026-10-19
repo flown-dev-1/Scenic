@@ -1,12 +1,11 @@
 class_name SceneQueue extends Object
 
 #region constants
-const SCENE_ADD_QUEUED_INFO: String = 			"[Scenic] %s queued for creation"
-const SCENE_RELOAD_QUEUED_INFO: String = 		"[Scenic] %s queued for reloading"
-const SCENE_REMOVE_QUEUED_INFO: String = 		"[Scenic] %s queued for deletion"
-const SCENE_REMOVE_ALL_QUEUED_INFO: String = 	"[Scenic] All scenes queued for deletion"
-const SCENE_ADD_EXISTS_WARNING: String = 		"[Scenic] Attempted to add a scene when it was already added and not queued for removal"
-const SCENE_DOES_NOT_EXIST_ERROR: String = 		"[Scenic] No scene named %s exists"
+const SCENE_ADD_QUEUED_INFO: String = 						"[Scenic] %s queued for creation"
+const SCENE_RELOAD_QUEUED_INFO: String = 					"[Scenic] %s queued for reloading"
+const SCENE_REMOVE_QUEUED_INFO: String = 					"[Scenic] %s queued for deletion"
+const SCENE_REMOVE_ALL_QUEUED_INFO: String = 				"[Scenic] All scenes queued for deletion"
+const SCENE_REMOVE_ALL_QUEUED_EXCLUDE_TAGS_INFO: String = 	"[Scenic] All scenes not tagged with %s queued for deletion"
 
 #region identity
 var _scene_manager: SceneManager = null
@@ -30,10 +29,10 @@ func _notification(what: int) -> void:
 
 #region public_functions
 func add(scene_name: StringName, data: Variant = null) -> SceneQueue:
+	print_verbose(SCENE_ADD_QUEUED_INFO % scene_name)
+	
 	var add_action = AddAction.new(_scene_manager, scene_name, data)
 	_action_queue.push_back(add_action)
-	
-	print_verbose(SCENE_ADD_QUEUED_INFO % scene_name)
 	
 	return self
 
@@ -47,10 +46,10 @@ func adds(scene_names: Array[StringName], datas: Array[Variant] = []) -> SceneQu
 	return self
 
 func reload(scene_name: StringName, data: Variant = null) -> SceneQueue:
+	print_verbose(SCENE_RELOAD_QUEUED_INFO % scene_name)
+	
 	var reload_action = ReloadAction.new(scene_name, data)
 	_action_queue.push_back(reload_action)
-	
-	print_verbose(SCENE_RELOAD_QUEUED_INFO % scene_name)
 	
 	return self
 
@@ -64,10 +63,10 @@ func reloads(scene_names: Array[StringName], datas: Array[Variant] = []) -> Scen
 	return self
 
 func remove(scene_name: StringName) -> SceneQueue:
+	print_verbose(SCENE_REMOVE_QUEUED_INFO % scene_name)
+	
 	var remove_action = RemoveAction.new(scene_name)
 	_action_queue.push_back(remove_action)
-	
-	print_verbose(SCENE_REMOVE_QUEUED_INFO % scene_name)
 	
 	return self
 
@@ -80,10 +79,13 @@ func removes(scene_names: Array[StringName]) -> SceneQueue:
 	return self
 
 func remove_all(exclude_tags: Array[StringName] = []) -> SceneQueue:
+	if exclude_tags.size() == 0:
+		print_verbose(SCENE_REMOVE_ALL_QUEUED_INFO)
+	else:
+		print_verbose(SCENE_REMOVE_ALL_QUEUED_EXCLUDE_TAGS_INFO % exclude_tags)
+	
 	var remove_all_action = RemoveAllAction.new(exclude_tags)
 	_action_queue.push_back(remove_all_action)
-	
-	print_verbose(SCENE_REMOVE_ALL_QUEUED_INFO)
 	
 	return self
 
@@ -124,9 +126,13 @@ func transition(_in_transition: StringName = &"", _in_time_scale: float = -1.0, 
 	
 	if _out_transition != &"":
 		out_transition = _out_transition
+	elif _in_transition != &"":
+		out_transition = _in_transition
 	
 	if _out_time_scale > 0.0:
 		out_time_scale = _out_time_scale
+	elif _in_time_scale > 0.0:
+		out_time_scale = _in_time_scale
 	
 	_scene_manager._run_transition_for_queue(self)
 

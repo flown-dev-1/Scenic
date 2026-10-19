@@ -34,72 +34,79 @@ func force_unload(scene_name: StringName) -> void:
 func queue() -> SceneQueue:
 	if _target_scene_manager == null:
 		push_error(NO_GLOBAL_MANAGER_ERROR)
-		return
+		return null
 	
 	return _target_scene_manager.queue()
 
 func add(scene_name: StringName, data: Variant = null) -> SceneQueue:
 	if _target_scene_manager == null:
 		push_error(NO_GLOBAL_MANAGER_ERROR)
-		return
+		return null
 	
 	return _target_scene_manager.add(scene_name, data)
 
 func adds(scene_names: Array[StringName], datas: Array[Variant] = []) -> SceneQueue:
 	if _target_scene_manager == null:
 		push_error(NO_GLOBAL_MANAGER_ERROR)
-		return
+		return null
 	
 	return _target_scene_manager.adds(scene_names, datas)
 
 func reload(scene_name: StringName, data: Variant = null) -> SceneQueue:
 	if _target_scene_manager == null:
 		push_error(NO_GLOBAL_MANAGER_ERROR)
-		return
+		return null
 	
 	return _target_scene_manager.reload(scene_name, data)
 
 func reloads(scene_names: Array[StringName], datas: Array[Variant] = []) -> SceneQueue:
 	if _target_scene_manager == null:
 		push_error(NO_GLOBAL_MANAGER_ERROR)
-		return
+		return null
 	
 	return _target_scene_manager.reloads(scene_names, datas)
 
 func remove(scene_name: StringName) -> SceneQueue:
 	if _target_scene_manager == null:
 		push_error(NO_GLOBAL_MANAGER_ERROR)
-		return
+		return null
 	
 	return _target_scene_manager.remove(scene_name)
 
 func removes(scene_names: Array[StringName]) -> SceneQueue:
 	if _target_scene_manager == null:
 		push_error(NO_GLOBAL_MANAGER_ERROR)
-		return
+		return null
 	
 	return _target_scene_manager.removes(scene_names)
 
-func remove_all() -> SceneQueue:
+func remove_all(exclude_tags: Array[StringName] = []) -> SceneQueue:
 	if _target_scene_manager == null:
 		push_error(NO_GLOBAL_MANAGER_ERROR)
-		return
+		return null
 	
-	return _target_scene_manager.remove_all()
+	return _target_scene_manager.remove_all(exclude_tags)
+
+func switch(scene_name: StringName, data: Variant = null, exclude_tags: Array[StringName] = []) -> SceneQueue:
+	if _target_scene_manager == null:
+		push_error(NO_GLOBAL_MANAGER_ERROR)
+		return null
+	
+	return _target_scene_manager.switch(scene_name, data, exclude_tags)
+
+func switches(scene_names: Array[StringName], datas: Array[Variant] = [], exclude_tags: Array[StringName] = []) -> SceneQueue:
+	if _target_scene_manager == null:
+		push_error(NO_GLOBAL_MANAGER_ERROR)
+		return null
+	
+	return switches(scene_names, datas, exclude_tags)
 
 func with_transition(in_transition: StringName, in_time_scale: float = 1.0, out_transition: StringName = &"", out_time_scale: float = -1.0) -> SceneQueue:
 	if _target_scene_manager == null:
 		push_error(NO_GLOBAL_MANAGER_ERROR)
-		return
+		return null
 	
 	return _target_scene_manager.with_transition(in_transition, in_time_scale, out_transition, out_time_scale)
-
-func get_scene_info(scene_name: StringName) -> SceneInfo:
-	if _target_scene_manager == null:
-		push_error(NO_GLOBAL_MANAGER_ERROR)
-		return
-	
-	return _target_scene_manager.get_scene_info(scene_name)
 
 #region internal_functions
 func _register_scene_manager(scene_manager: SceneManager) -> void:

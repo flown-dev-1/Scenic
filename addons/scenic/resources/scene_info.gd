@@ -6,5 +6,5 @@ class_name SceneInfo extends Resource
 @export var global: bool = false
 
 #region node_events
-func _init(_uid: int) -> void:
+func _init(_uid: int = 0) -> void:
 	uid = _uid

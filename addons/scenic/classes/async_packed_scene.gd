@@ -107,4 +107,6 @@ func _start_loading() -> void:
 		push_error(LOAD_START_FAILED_ERROR % _path)
 		return
 	
+	_state = SceneLoadingState.LOADING
+	
 	print_verbose(START_LOAD_INFO % _path)

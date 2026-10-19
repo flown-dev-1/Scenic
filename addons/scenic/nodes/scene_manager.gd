@@ -2,10 +2,10 @@
 class_name SceneManager extends Node
 
 #region constants
-const SCENE_INSTANTIATED_INFO: String = 		"[Scenic] %s instantiated"
-const SCENE_FREED_INFO: String = 				"[Scenic] %s freed"
-const FORCE_UNLOAD_NOT_LOADED_WARNING = 		"[Scenic] Attempted to force unload %s when it was not loaded"
-const INVALID_TIME_SCALE_ERROR: String = 		"[Scenic] Invalid time scale %s. Setting time scale to 1.0"
+const SETUP_INFO: String = 				"[Scenic] Setting up initial state"
+const SCENE_INSTANTIATED_INFO: String = "[Scenic] %s instantiated"
+const SCENE_FREED_INFO: String = 		"[Scenic] %s freed"
+const FORCE_UNLOAD_NOT_LOADED_WARNING = "[Scenic] Attempted to force unload %s when it was not loaded"
 
 #region exports
 @export var global: bool = true
@@ -14,7 +14,7 @@ const INVALID_TIME_SCALE_ERROR: String = 		"[Scenic] Invalid time scale %s. Sett
 #region references
 var _scene_parent: Node = null
 var _active_scenes: Dictionary = {} #{<scene_name>: <scene>}
-var _transitions: Dictionary = {}
+var _transitions: Dictionary = {} #{<transition_name>: <transition>}
 
 #region state
 var _force_loaded: Dictionary = {} #{<scene_name>: <async_scene>}
@@ -27,6 +27,11 @@ func _ready() -> void:
 	
 	if global:
 		GlobalSceneManager._register_scene_manager(self)
+	
+	print(SETUP_INFO)
+	
+	_add_global_scenes()
+	_add_initial_scenes()
 
 func _exit_tree() -> void:
 	if global:
@@ -98,10 +103,16 @@ func with_transition_callback(callback: Callable, in_transition: StringName, in_
 func get_scene_info(scene_name: StringName) -> SceneInfo:
 	return _scenes.get(scene_name)
 
+func is_active(scene_name: StringName) -> bool:
+	return _active_scenes.has(scene_name)
+
 #region internal_functions
 func _add_scene(scene_name: StringName, scene_scene: PackedScene, data: Variant) -> void:
 	var scene = scene_scene.instantiate()
 	scene.name = scene_name
+	
+	print(SCENE_INSTANTIATED_INFO % scene_name)
+	
 	_scene_parent.add_child(scene)
 	scene._start(data)
 	
@@ -113,6 +124,10 @@ func _reload_scene(scene_name: StringName, data: Variant) -> void:
 	_scene_parent.remove_child(old_scene)
 	
 	var new_scene = old_scene.duplicate()
+	
+	print(SCENE_FREED_INFO % scene_name)
+	print(SCENE_INSTANTIATED_INFO % scene_name)
+	
 	_scene_parent.add_child(new_scene)
 	new_scene._start(data)
 	
@@ -124,6 +139,8 @@ func _remove_scene(scene_name: StringName) -> void:
 	var scene = _active_scenes.get(scene_name)
 	_scene_parent.remove_child(scene)
 	scene.queue_free()
+	
+	print(SCENE_FREED_INFO % scene_name)
 	
 	_active_scenes.erase(scene_name)
 	_active_scenes_count -= 1
@@ -147,15 +164,21 @@ func _run_transition_for_queue(queue: SceneQueue) -> void:
 	var in_transition = _get_transition_by_name(queue.in_transition)
 	var out_transition = _get_transition_by_name(queue.out_transition)
 	
-	await in_transition.transition_in(queue.in_time_scale)
+	if in_transition != null:
+		await in_transition.transition_in(queue.in_time_scale)
 	
 	await queue._run_actions()
 	
-	if in_transition != out_transition:
-		out_transition.set_in()
+	if queue.scene_transition_callback.is_valid():
+		queue.scene_transition_callback.call()
+	
+	if in_transition != null && in_transition != out_transition:
+		if out_transition != null:
+			out_transition.set_in()
 		in_transition.set_out()
 	
-	await out_transition.transition_out(queue.out_time_scale)
+	if out_transition != null:
+		await out_transition.transition_out(queue.out_time_scale)
 
 func _get_loaded_scenes_count() -> int:
 	return _loaded_scenes_count
@@ -168,6 +191,31 @@ func _create_scene_parent() -> void:
 	_scene_parent = Node.new()
 	_scene_parent.name = &"SceneParent"
 	add_child(_scene_parent)
+
+func _add_global_scenes() -> void:
+	for scene_name in _scenes:
+		var scene_info = get_scene_info(scene_name)
+		
+		if scene_info.global:
+			force_load(scene_name)
+
+func _add_initial_scenes() -> void:
+	var initial_scenes = {}
+	
+	for scene_name in _scenes:
+		var scene_info = get_scene_info(scene_name)
+		
+		if scene_info.initial:
+			initial_scenes.set(scene_name, SceneLoader.subscribe_scene(scene_info.uid))
+	
+	for scene_name in initial_scenes:
+		var async_scene = initial_scenes.get(scene_name)
+		
+		var scene = await async_scene.get_scene_async()
+		_add_scene(scene_name, scene, null)
+		
+		var scene_info = get_scene_info(scene_name)
+		SceneLoader.unsubscribe_scene(scene_info.uid)
 
 func _get_transition_by_name(transition_name: StringName) -> SceneTransition:
 	return _transitions.get(transition_name)
