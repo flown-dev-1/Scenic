@@ -3,7 +3,7 @@ class_name AsyncPackedScene extends RefCounted
 #region constants
 const START_LOAD_INFO: String = 					"[Scenic] Started loading scene from \"%s\""
 const LOAD_INFO: String = 							"[Scenic] Loaded scene from \"%s\""
-const UNLOAD_INFO: String = 						"[Scenic] %s unloaded"
+const UNLOAD_INFO: String = 						"[Scenic] Unloaded scene from \"%s\""
 const RELOAD_WARNING: String = 						"[Scenic] Attempting to load \"%s\" after it has already been loaded"
 const UNLOAD_NOTHING_WARNING: String = 				"[Scenic] Attempting to unload \"%s\" when it is already unloaded"
 const LOAD_START_FAILED_ERROR: String = 			"[Scenic] Failed to start loading the scene from \"%s\""
@@ -56,6 +56,7 @@ func queue_unload() -> void:
 		_state = SceneLoadingState.CANCEL_AFTER_LOAD
 	else:
 		_state = SceneLoadingState.CANCELED
+		print_verbose(UNLOAD_INFO % _path)
 
 func poll_loading_progress() -> void:
 	if _state == SceneLoadingState.LOAD_QUEUED:
@@ -78,17 +79,17 @@ func poll_loading_progress() -> void:
 				_loading_progress = progress[0]
 			
 			ResourceLoader.ThreadLoadStatus.THREAD_LOAD_LOADED:
-				print_verbose(LOAD_INFO % _path)
-				
 				_loading_progress = 1.0
 				_scene = ResourceLoader.load_threaded_get(_path)
 				
-				if _state == SceneLoadingState.CANCEL_AFTER_LOAD:
-					_state = SceneLoadingState.CANCELED
-				else:
-					_state = SceneLoadingState.LOADED
+				_state = SceneLoadingState.LOADED
+				print_verbose(LOAD_INFO % _path)
 				
 				loaded.emit()
+				
+				if _state == SceneLoadingState.CANCEL_AFTER_LOAD:
+					_state = SceneLoadingState.CANCELED
+					print_verbose(UNLOAD_INFO % _path)
 
 func get_scene_async() -> PackedScene:
 	if _state != SceneLoadingState.LOADED:

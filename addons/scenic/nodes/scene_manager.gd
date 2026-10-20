@@ -3,8 +3,10 @@ class_name SceneManager extends Node
 
 #region constants
 const SETUP_INFO: String = 				"[Scenic] Setting up initial state"
-const SCENE_INSTANTIATED_INFO: String = "[Scenic] %s instantiated"
-const SCENE_FREED_INFO: String = 		"[Scenic] %s freed"
+const SCENE_INSTANTIATED_INFO: String = "[Scenic] %s added"
+const SCENE_FREED_INFO: String = 		"[Scenic] %s removed"
+const FORCE_LOAD_INFO: String = 		"[Scenic] Force loaded %s"
+const FORCE_UNLOAD_INFO: String = 		"[Scenic] Force unloaded %s"
 const FORCE_UNLOAD_NOT_LOADED_WARNING = "[Scenic] Attempted to force unload %s when it was not loaded"
 
 #region exports
@@ -13,12 +15,11 @@ const FORCE_UNLOAD_NOT_LOADED_WARNING = "[Scenic] Attempted to force unload %s w
 
 #region references
 var _scene_parent: Node = null
-var _active_scenes: Dictionary[StringName, Node] = {} #{<scene_name>: <scene>}
+var _active_scenes: Dictionary[StringName, LoadedSceneRefs] = {} #{<scene_name>: <scene>}
 var _transitions: Dictionary[StringName, SceneTransition] = {} #{<transition_name>: <transition>}
 
 #region state
 var _force_loaded: Dictionary[StringName, AsyncPackedSceneHandle] = {} #{<scene_name>: <async_scene_handle>}
-var _active_scenes_count: int = 0
 
 #region node_events
 func _ready() -> void:
@@ -41,6 +42,8 @@ func force_load(scene_name: StringName) -> void:
 	if _force_loaded.has(scene_name):
 		return
 	
+	print_verbose(FORCE_LOAD_INFO % scene_name)
+	
 	var scene_uid: int = get_scene_info(scene_name).uid
 	var async_scene_handle: AsyncPackedSceneHandle = SceneLoader.get_async_scene(scene_uid)
 	
@@ -50,6 +53,8 @@ func force_unload(scene_name: StringName) -> void:
 	if !_force_loaded.has(scene_name):
 		push_warning(FORCE_UNLOAD_NOT_LOADED_WARNING)
 		return
+	
+	print_verbose(FORCE_UNLOAD_INFO % scene_name)
 	
 	_force_loaded.erase(scene_name)
 
@@ -103,7 +108,8 @@ func is_active(scene_name: StringName) -> bool:
 	return _active_scenes.has(scene_name)
 
 #region internal_functions
-func _add_scene(scene_name: StringName, scene_scene: PackedScene, data: Variant) -> void:
+func _add_scene(scene_name: StringName, async_scene_handle: AsyncPackedSceneHandle, data: Variant) -> void:
+	var scene_scene = await async_scene_handle.async_scene.get_scene_async()
 	var scene = scene_scene.instantiate()
 	scene.name = scene_name
 	
@@ -112,38 +118,43 @@ func _add_scene(scene_name: StringName, scene_scene: PackedScene, data: Variant)
 	_scene_parent.add_child(scene)
 	scene._start(data)
 	
-	_active_scenes.set(scene_name, scene)
-	_active_scenes_count += 1
+	var loaded_scene_refs = LoadedSceneRefs.new(scene, async_scene_handle)
+	
+	_active_scenes.set(scene_name, loaded_scene_refs)
 
 func _reload_scene(scene_name: StringName, data: Variant) -> void:
-	var old_scene = _active_scenes.get(scene_name)
+	var loaded_scene_refs: LoadedSceneRefs = _active_scenes.get(scene_name)
+	var old_scene := loaded_scene_refs.node
 	_scene_parent.remove_child(old_scene)
-	
-	var new_scene = old_scene.duplicate()
+	old_scene.queue_free()
 	
 	print(SCENE_FREED_INFO % scene_name)
+	
+	var scene_scene := await loaded_scene_refs.async_scene_handle.async_scene.get_scene_async()
+	var new_scene := scene_scene.instantiate()
+	new_scene.name = scene_name
+	
 	print(SCENE_INSTANTIATED_INFO % scene_name)
 	
 	_scene_parent.add_child(new_scene)
 	new_scene._start(data)
 	
-	_active_scenes.set(scene_name, new_scene)
-	
-	old_scene.queue_free()
+	loaded_scene_refs.node = new_scene
 
 func _remove_scene(scene_name: StringName) -> void:
-	var scene = _active_scenes.get(scene_name)
+	var loaded_scene_refs: LoadedSceneRefs = _active_scenes.get(scene_name)
+	var scene := loaded_scene_refs.node
 	_scene_parent.remove_child(scene)
 	scene.queue_free()
 	
 	print(SCENE_FREED_INFO % scene_name)
 	
 	_active_scenes.erase(scene_name)
-	_active_scenes_count -= 1
 
 func _remove_all_scenes(exclude_tags: Array[StringName]) -> void:
 	for scene_name in _active_scenes.keys():
-		var scene = _active_scenes.get(scene_name)
+		var loaded_scene_refs: LoadedSceneRefs = _active_scenes.get(scene_name)
+		var scene := loaded_scene_refs.node
 		
 		var has_tag = false
 		for exclude_tag in exclude_tags:
@@ -177,7 +188,7 @@ func _run_transition_for_queue(queue: SceneQueue) -> void:
 		await out_transition.transition_out(queue.out_time_scale)
 
 func _get_active_scenes_count() -> int:
-	return _active_scenes_count
+	return _active_scenes.size()
 
 #region private_functions
 func _create_scene_parent() -> void:
@@ -203,10 +214,16 @@ func _add_initial_scenes() -> void:
 	
 	for scene_name in initial_scenes:
 		var async_scene_handle: AsyncPackedSceneHandle = initial_scenes.get(scene_name)
-		var async_scene := async_scene_handle.async_scene
-		
-		var scene := await async_scene.get_scene_async()
-		_add_scene(scene_name, scene, null)
+		_add_scene(scene_name, async_scene_handle, null)
 
 func _get_transition_by_name(transition_name: StringName) -> SceneTransition:
 	return _transitions.get(transition_name)
+
+#region classes
+class LoadedSceneRefs:
+	var node: Node = null
+	var async_scene_handle: AsyncPackedSceneHandle = null
+	
+	func _init(_node: Node, _async_scene_handle: AsyncPackedSceneHandle) -> void:
+		node = _node
+		async_scene_handle = _async_scene_handle

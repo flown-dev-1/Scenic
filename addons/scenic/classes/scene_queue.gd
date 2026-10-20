@@ -159,9 +159,7 @@ class AddAction extends Action:
 		if scene_manager.is_active(_scene_name):
 			return
 		
-		var scene_scene = await _async_scene_handle.async_scene.get_scene_async()
-		
-		scene_manager._add_scene(_scene_name, scene_scene, _data)
+		scene_manager._add_scene(_scene_name, _async_scene_handle, _data)
 
 class ReloadAction extends Action:
 	var _scene_name: StringName
