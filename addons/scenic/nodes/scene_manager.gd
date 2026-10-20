@@ -9,16 +9,15 @@ const FORCE_UNLOAD_NOT_LOADED_WARNING = "[Scenic] Attempted to force unload %s w
 
 #region exports
 @export var global: bool = true
-@export var _scenes: Dictionary = {} #{<scene_name>: <scene_info>}
+@export var _scenes: Dictionary[StringName, SceneInfo] = {} #{<scene_name>: <scene_info>}
 
 #region references
 var _scene_parent: Node = null
-var _active_scenes: Dictionary = {} #{<scene_name>: <scene>}
-var _transitions: Dictionary = {} #{<transition_name>: <transition>}
+var _active_scenes: Dictionary[StringName, Node] = {} #{<scene_name>: <scene>}
+var _transitions: Dictionary[StringName, SceneTransition] = {} #{<transition_name>: <transition>}
 
 #region state
-var _force_loaded: Dictionary = {} #{<scene_name>: <async_scene>}
-var _loaded_scenes_count: int = 0
+var _force_loaded: Dictionary[StringName, AsyncPackedSceneHandle] = {} #{<scene_name>: <async_scene_handle>}
 var _active_scenes_count: int = 0
 
 #region node_events
@@ -42,18 +41,15 @@ func force_load(scene_name: StringName) -> void:
 	if _force_loaded.has(scene_name):
 		return
 	
-	var scene_uid = get_scene_info(scene_name).uid
-	var async_scene = SceneLoader.subscribe_scene(scene_uid)
+	var scene_uid: int = get_scene_info(scene_name).uid
+	var async_scene_handle: AsyncPackedSceneHandle = SceneLoader.get_async_scene(scene_uid)
 	
-	_force_loaded.set(scene_name, async_scene)
+	_force_loaded.set(scene_name, async_scene_handle)
 
 func force_unload(scene_name: StringName) -> void:
 	if !_force_loaded.has(scene_name):
 		push_warning(FORCE_UNLOAD_NOT_LOADED_WARNING)
 		return
-	
-	var async_scene = _force_loaded.get(scene_name)
-	SceneLoader.unsubscribe_scene(async_scene.uid)
 	
 	_force_loaded.erase(scene_name)
 
@@ -180,9 +176,6 @@ func _run_transition_for_queue(queue: SceneQueue) -> void:
 	if out_transition != null:
 		await out_transition.transition_out(queue.out_time_scale)
 
-func _get_loaded_scenes_count() -> int:
-	return _loaded_scenes_count
-
 func _get_active_scenes_count() -> int:
 	return _active_scenes_count
 
@@ -200,22 +193,20 @@ func _add_global_scenes() -> void:
 			force_load(scene_name)
 
 func _add_initial_scenes() -> void:
-	var initial_scenes = {}
+	var initial_scenes: Dictionary[StringName, AsyncPackedSceneHandle] = {}
 	
 	for scene_name in _scenes:
-		var scene_info = get_scene_info(scene_name)
+		var scene_info := get_scene_info(scene_name)
 		
 		if scene_info.initial:
-			initial_scenes.set(scene_name, SceneLoader.subscribe_scene(scene_info.uid))
+			initial_scenes.set(scene_name, SceneLoader.get_async_scene(scene_info.uid))
 	
 	for scene_name in initial_scenes:
-		var async_scene = initial_scenes.get(scene_name)
+		var async_scene_handle: AsyncPackedSceneHandle = initial_scenes.get(scene_name)
+		var async_scene := async_scene_handle.async_scene
 		
-		var scene = await async_scene.get_scene_async()
+		var scene := await async_scene.get_scene_async()
 		_add_scene(scene_name, scene, null)
-		
-		var scene_info = get_scene_info(scene_name)
-		SceneLoader.unsubscribe_scene(scene_info.uid)
 
 func _get_transition_by_name(transition_name: StringName) -> SceneTransition:
 	return _transitions.get(transition_name)

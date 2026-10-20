@@ -12,13 +12,13 @@ var _editor_theme: Theme = null
 var _tree: Tree = null
 
 #region state
-var _scenes: Dictionary
+var _scenes: Dictionary[StringName, SceneInfo] #{<scene_name>: <scene_info>}
 var _updating: bool = false
 var _previous_selected: TreeItem = null
 var _item_just_added: StringName = &""
 
 #region node_events
-func _init(scenes: Dictionary) -> void:
+func _init(scenes: Dictionary[StringName, SceneInfo]) -> void:
 	if _editor_theme == null:
 		_editor_theme = EditorInterface.get_editor_theme()
 	

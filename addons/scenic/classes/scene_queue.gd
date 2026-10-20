@@ -1,4 +1,4 @@
-class_name SceneQueue extends Object
+class_name SceneQueue extends RefCounted
 
 #region constants
 const SCENE_ADD_QUEUED_INFO: String = 						"[Scenic] %s queued for creation"
@@ -21,11 +21,6 @@ var scene_transition_callback: Callable = Callable()
 #region node_events
 func _init(scene_manager: SceneManager) -> void:
 	_scene_manager = scene_manager
-
-func _notification(what: int) -> void:
-	if what == NOTIFICATION_PREDELETE:
-		for action in _action_queue:
-			action.free()
 
 #region public_functions
 func add(scene_name: StringName, data: Variant = null) -> SceneQueue:
@@ -147,30 +142,26 @@ func _run_actions() -> void:
 		await action.run(_scene_manager)
 
 #region classes
-@abstract class Action extends Object:
+@abstract class Action extends RefCounted:
 	@abstract func run(scene_manager: SceneManager) -> void
-	@abstract func free() -> void
 
 class AddAction extends Action:
 	var _scene_name: StringName
-	var _async_scene: AsyncPackedScene
+	var _async_scene_handle: AsyncPackedSceneHandle
 	var _data: Variant
 	
 	func _init(scene_manager: SceneManager, scene_name: StringName, data: Variant = null) -> void:
 		_scene_name = scene_name
-		_async_scene = SceneLoader.subscribe_scene(scene_manager.get_scene_info(_scene_name).uid)
+		_async_scene_handle = SceneLoader.get_async_scene(scene_manager.get_scene_info(_scene_name).uid)
 		_data = data
 	
 	func run(scene_manager: SceneManager) -> void:
 		if scene_manager.is_active(_scene_name):
 			return
 		
-		var scene_scene = await _async_scene.get_scene_async()
+		var scene_scene = await _async_scene_handle.async_scene.get_scene_async()
 		
 		scene_manager._add_scene(_scene_name, scene_scene, _data)
-	
-	func free() -> void:
-		SceneLoader.unsubscribe_scene(_async_scene.uid)
 
 class ReloadAction extends Action:
 	var _scene_name: StringName
@@ -185,9 +176,6 @@ class ReloadAction extends Action:
 			return
 		
 		scene_manager._reload_scene(_scene_name, _data)
-	
-	func free() -> void:
-		pass
 
 class RemoveAction extends Action:
 	var _scene_name: StringName
@@ -200,9 +188,6 @@ class RemoveAction extends Action:
 			return
 		
 		scene_manager._remove_scene(_scene_name)
-	
-	func free() -> void:
-		pass
 
 class RemoveAllAction extends Action:
 	var _exclude_tags: Array[StringName]
@@ -212,6 +197,3 @@ class RemoveAllAction extends Action:
 	
 	func run(scene_manager: SceneManager) -> void:
 		scene_manager._remove_all_scenes(_exclude_tags)
-	
-	func free() -> void:
-		pass

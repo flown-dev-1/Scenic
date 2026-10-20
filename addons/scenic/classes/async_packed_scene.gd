@@ -1,4 +1,4 @@
-class_name AsyncPackedScene extends Object
+class_name AsyncPackedScene extends RefCounted
 
 #region constants
 const START_LOAD_INFO: String = 					"[Scenic] Started loading scene from \"%s\""
@@ -20,7 +20,7 @@ enum SceneLoadingState {
 }
 
 #region signals
-signal loaded_scene
+signal loaded
 
 #region identity
 var uid: int = 0:
@@ -37,7 +37,6 @@ var _path: String = ""
 var _scene: PackedScene = null
 
 #region state
-var ref_count: int = 0
 var _state: SceneLoadingState = SceneLoadingState.LOAD_QUEUED
 var _loading_progress: float = 0.0
 
@@ -89,11 +88,11 @@ func poll_loading_progress() -> void:
 				else:
 					_state = SceneLoadingState.LOADED
 				
-				loaded_scene.emit()
+				loaded.emit()
 
 func get_scene_async() -> PackedScene:
 	if _state != SceneLoadingState.LOADED:
-		await loaded_scene
+		await loaded
 	
 	return _scene
 

@@ -6,7 +6,7 @@ class_name Scene extends Node
 @export var _tags: Array[StringName] = []
 
 #region identity
-var _internal_tags: Dictionary = {} #{<tag>: null}
+var _internal_tags: Dictionary[StringName, Object] = {} #{<tag>: null}
 
 #region references
 var scene_manager: SceneManager = null

@@ -9,11 +9,9 @@ var _target_scene_manager: SceneManager = null
 
 #region node_events
 func _enter_tree() -> void:
-	Performance.add_custom_monitor("global_scene_manager/scenes_loaded", _get_loaded_scenes_count)
 	Performance.add_custom_monitor("global_scene_manager/scenes_active", _get_active_scenes_count)
 
 func _exit_tree() -> void:
-	Performance.remove_custom_monitor("global_scene_manager/scenes_loaded")
 	Performance.remove_custom_monitor("global_scene_manager/scenes_active")
 
 #region public_functions

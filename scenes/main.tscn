@@ -22,11 +22,11 @@ bg_color = Color(1, 1, 1, 1)
 
 [node name="Main" type="Node" unique_id=483677420]
 script = ExtResource("1_o5qli")
-_scenes = {
+_scenes = Dictionary[StringName, ExtResource("2_sugp2")]({
 &"Test 1": SubResource("Resource_sugp2"),
 &"Test 2": SubResource("Resource_jyhfs"),
 &"Test 3": SubResource("Resource_tbgi4")
-}
+})
 metadata/_custom_type_script = "uid://duewdbbsl6u0s"
 
 [node name="Fade" type="CanvasLayer" parent="." unique_id=1243219569 node_paths=PackedStringArray("_curtain")]
