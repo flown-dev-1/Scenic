@@ -109,7 +109,7 @@ func is_active(scene_name: StringName) -> bool:
 
 #region internal_functions
 func _add_scene(scene_name: StringName, async_scene_handle: AsyncPackedSceneHandle, data: Variant) -> void:
-	var scene_scene = await async_scene_handle.async_scene.get_scene_async()
+	var scene_scene = await async_scene_handle.get_scene_async()
 	var scene = scene_scene.instantiate()
 	scene.name = scene_name
 	
@@ -130,7 +130,7 @@ func _reload_scene(scene_name: StringName, data: Variant) -> void:
 	
 	print(SCENE_FREED_INFO % scene_name)
 	
-	var scene_scene := await loaded_scene_refs.async_scene_handle.async_scene.get_scene_async()
+	var scene_scene := await loaded_scene_refs.async_scene_handle.get_scene_async()
 	var new_scene := scene_scene.instantiate()
 	new_scene.name = scene_name
 	
