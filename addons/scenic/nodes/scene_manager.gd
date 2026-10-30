@@ -34,8 +34,7 @@ func _ready() -> void:
 	_add_initial_scenes()
 
 func _exit_tree() -> void:
-	if global:
-		GlobalSceneManager._unregister_scene_manager(self)
+	GlobalSceneManager._unregister_scene_manager(self)
 
 #region public_functions
 func force_load(scene_name: StringName) -> void:
