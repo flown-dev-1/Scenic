@@ -30,7 +30,7 @@ It is recommended that the root node of your main scene is a `SceneManager`. The
 ## Creating the Main Scene
 ![Scene Manager Setup](https://github.com/super-miner/Scenic/blob/main/scene_manager_setup.png)
 
-*A basic scene manager set-up with one transition. See [Transitions](https://github.com/super-miner/Scenic#transitions)  for more information about creating transitions.*
+*A basic scene manager set-up with one transition. See [Transitions](https://github.com/super-miner/Scenic#transitions) for more information about creating transitions.*
 
 Make sure your SceneManager node has `global` set to `true`. Scenic lets you use multiple scene managers but only one is allowed to be "global". The global scene can be accessed through the `GlobalSceneManager` autoload.
 
