@@ -18,7 +18,7 @@ You can install the addon manually or through the asset store.
 
 ## Asset Store Installation
 1. Navigate to the `Asset Store` tab in your Godot project.
-2. Locate the "Search" addon and click on it.
+2. Locate the "Scenic" addon and click on it.
 3. Click the download button.
 4. Enable "Scenic" in `Project Settings > Plugins`.
 
