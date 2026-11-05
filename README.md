@@ -273,11 +273,8 @@ GlobalSceneManager.force_unload(&"Scene 1")
 * **Node icons & logo** from [@icons](https://github.com/Voxybuns/at-icons)
 * **Background image** from [ClickerHappy](https://www.pexels.com/photo/photo-of-mountains-during-sunset-777211/)
 
+</br>
 
-
-
-
-
-
+*No AI was used in the creation of this asset.*
 
 
